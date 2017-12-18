@@ -153,9 +153,35 @@ truncvalue <- reactive(as.double(input$truncation[1]))
                                       round((sum(OL()$datasheet$MOOS.Bull.L)/(OL()$Bull_n - sum(OL()$datasheet$MOOS.Bull.N)))*100,1), "% were large. In addition to moose, ",
                                       OL()$WTD_n, " White-tailed deer, ", OL()$MUDE_n, " Mule Deer, and ", OL()$WAPT_n," elk were observed during the survey. The observed sample sizes for these species may not be sufficient to provide a reliable estimate of abundance. Check the other tabs")})
 
+############################################
+######## Aircraft detection functions
+###########################################
+ ###---T----
+ ###   O---0
+ #########################
+  
+  
+output$AIRCRAFT_DF = renderPlot({  
+  library(grid)
+  Copy.df <- DistancePreInput.MOOS
+  Copy.df$DistancePerp <- as.numeric(Copy.df$DistancePerp)
+  Copy.df$MOOS.GroupSize <- as.numeric(Copy.df$MOOS.GroupSize)
+  CleanHistData <- Copy.df[!(Copy.df$DistancePerp==""),]
+  CleanHistData <- Copy.df[!is.na(Copy.df$DistancePerp),]
+  CleanHistData <- subset(CleanHistData, DistancePerp <= 600)
+  CleanHistData["distance"] <- CleanHistData$DistancePerp
+  CleanHistData["object"] <- seq.int(nrow(CleanHistData))
 
+U.list <- split(CleanHistData, CleanHistData$Aircraft)
+for (i in 1: length(U.list)) {
+  par(mfrow=c(2,length(U.list)))
+  plot(ds(U.list[[i]], key="hn", adjustment = "cos", truncation = 425), main= paste("Detection function for aircraft:", unique(U.list[[i]]$Aircraft)))
+  ddf.gof((ddf(method="ds", data=U.list[[i]], dsmodel = ~cds(key="hn"), meta.data=list(width=425))), main=paste("Q-Q plot of cdf for aircraft:", unique(U.list[[i]]$Aircraft)))
+  
+}
+par(mfrow=c(1,1))
  
-
+)}
   output$myplot <- renderPlot({
 
     # input$file1 will be NULL initially. After the user selects and uploads a
@@ -184,12 +210,6 @@ truncvalue <- reactive(as.double(input$truncation[1]))
     names(datasheet) <- sub(" ", ".", names(datasheet))
     names(datasheet) <- sub("/", "", names(datasheet))
     names(datasheet) <- sub("/", "", names(datasheet))
-
-#################
-    #
-    #
-    #
-#################
 
     transflown <- datasheet[!duplicated(datasheet[, c("Transect.ID", "Stratum")]), ]
     transflown <- transflown[!is.na(transflown$Stratum),]
