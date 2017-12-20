@@ -48,16 +48,11 @@ truncvalue <- reactive(as.double(input$truncation[1]))
   strat <- sqlFetch(myconn, "strata")
   strat_num <- nrow(strat)
   results_num_index <- as.integer(strat_num) + 1
-
   datasheet <- as.data.frame(sqlQuery(myconn, "select * from datasheet"))
-
   names(datasheet) <- sub(" ", ".", names(datasheet))
   names(datasheet) <- sub(" ", ".", names(datasheet))
   names(datasheet) <- sub("/", "", names(datasheet))
   names(datasheet) <- sub("/", "", names(datasheet))
-
-
-
   transflown <- datasheet[!duplicated(datasheet[, c("Transect.ID", "Stratum")]), ]
   transflown <- transflown[!is.na(transflown$Stratum),]
   transflown$DistancePerp <- " "
@@ -65,29 +60,39 @@ truncvalue <- reactive(as.double(input$truncation[1]))
   transflown$Covariate.1 <- " "
   transflown$Covariate.2 <- " "
   transflown <- unique(transflown)
-
-
   datasheet.2 <- datasheet[ which(datasheet$MOOS.GroupSize >0),]
   datasheet.2 <- unique(datasheet.2)
-
-
   DistancePreInput.MOOS.2 <- anti_join(transflown, datasheet.2, by=c("Transect.ID","Stratum"))
   DistancePreInput.MOOS.2 <- unique(DistancePreInput.MOOS.2)
-
-
   DistancePreInput.MOOS <- merge(datasheet.2, DistancePreInput.MOOS.2, all=T)
   DistancePreInput.MOOS <- unique(DistancePreInput.MOOS)
-
-
   DistanceInput<- as.data.frame(cbind(object.ID = as.numeric(DistancePreInput.MOOS$ID), Region.Label= DistancePreInput.MOOS$Stratum,Area = as.numeric(DistancePreInput.MOOS$Stratum.Area), TID = as.numeric(DistancePreInput.MOOS$Transect.ID), TLENGTH = as.numeric(DistancePreInput.MOOS$Transect.Length), Effort=as.numeric(DistancePreInput.MOOS$Length)/1000, distance= as.numeric(DistancePreInput.MOOS$DistancePerp), size=as.numeric(DistancePreInput.MOOS$MOOS.GroupSize),CC=as.factor(DistancePreInput.MOOS$Covariate.1), Activity=as.factor(DistancePreInput.MOOS$Covariate.2)))
-
   DistanceInput <- DistanceInput[ order(DistanceInput$Region.Label, DistanceInput$TID, DistanceInput$size), ]
-
-
   close(myconn)
-
+  Copy.df <- DistancePreInput.MOOS
+  Copy.df$DistancePerp <- as.numeric(Copy.df$DistancePerp)
+  Copy.df$MOOS.GroupSize <- as.numeric(Copy.df$MOOS.GroupSize)
+  CleanHistData <- Copy.df[!(Copy.df$DistancePerp==""),]
+  CleanHistData <- Copy.df[!is.na(Copy.df$DistancePerp),]
+  CleanHistData <- subset(CleanHistData, DistancePerp <= 600)
+  CleanHistData["distance"] <- CleanHistData$DistancePerp
+  CleanHistData["object"] <- seq.int(nrow(CleanHistData))
+  U.list <- split(CleanHistData, CleanHistData$Aircraft)
+    
+    #######################
+    #MOOS Aircraft QQ-plot
+    #
+    #
+    
+    for (i in 1: length(U.list)) {
+ # par(mfrow=c(2,length(U.list)))
+        p1[i] <- plot(ds(U.list[[i]], key="hn", adjustment = "cos", truncation = 425), main= paste("Detection function for aircraft:", unique(U.list[[i]]$Aircraft)))
+        p2[i] <- ddf.gof((ddf(method="ds", data=U.list[[i]], dsmodel = ~cds(key="hn"), meta.data=list(width=425))), main=paste("Q-Q plot of cdf for aircraft:", unique(U.list[[i]]$Aircraft)))
+     }
+    
+    
+    
   DistanceInput2 <- as.data.frame(cbind(object = as.numeric(DistancePreInput.MOOS$ID), Region.Label= DistancePreInput.MOOS$Stratum,Area = as.numeric(DistancePreInput.MOOS$Stratum.Area), Sample.Label = as.numeric(DistancePreInput.MOOS$Transect.ID), Effort = as.numeric(DistancePreInput.MOOS$Transect.Length), distance= as.numeric(DistancePreInput.MOOS$DistancePerp), size=as.numeric(DistancePreInput.MOOS$MOOS.GroupSize),CC=as.factor(DistancePreInput.MOOS$Covariate.1), Activity=as.factor(DistancePreInput.MOOS$Covariate.2)))
-
   DistanceInput2 <- unique(DistanceInput2)
   Calf_n <-  sum(datasheet$MOOS.Calf)
   Cow_n <- sum(datasheet$MOOS.Cow)
@@ -101,8 +106,6 @@ truncvalue <- reactive(as.double(input$truncation[1]))
   WAPT_n <-  sum(datasheet$WAPT.Cow, datasheet$WAPT.Calf, datasheet$WAPT.Bull.NA, datasheet$WAPT.Bull.S, datasheet$WAPT.Bull.M, datasheet$WAPT.Bull.L, datasheet$WAPT.UC, datasheet$WAPT.UC.Adult)
   WAPT_n <-  sum(is.numeric(datasheet$WAPT.Cow), is.numeric( datasheet$WAPT.Calf), is.numeric( datasheet$WAPT.Bull.NA), is.numeric( datasheet$WAPT.Bull.S), is.numeric( datasheet$WAPT.Bull.M), is.numeric( datasheet$WAPT.Bull.L), is.numeric( datasheet$WAPT.UC), is.numeric( datasheet$WAPT.UC.Adult))
   k <- 425
-
-
   moos.hn_cos_2 <- ds(DistanceInput2, truncation = k, key="hn", adjustment = "cos", order = 2)
   moos.hn_cos_3 <- ds(DistanceInput2, truncation = k, key="hn", adjustment = "cos", order = 3)
   moos.hn_cos  <- ds(DistanceInput2, truncation = k, key="hn", adjustment = "cos")
@@ -111,11 +114,9 @@ truncvalue <- reactive(as.double(input$truncation[1]))
   moos.hr_cos  <- ds(DistanceInput2, truncation = k, key="hr", adjustment = "cos")
   moos.hr_poly  <- ds(DistanceInput2, truncation = k, key="hr", adjustment = "poly")
   moos.unif_cos <- ds(DistanceInput2, truncation = k, key="unif", adjustment = "cos")
-
   mlist <- list(moos.hn_cos, moos.hn_herm, moos.hr_herm, moos.hr_cos, moos.hr_poly, moos.unif_cos)
   modelnum <- length(mlist)
   model_results <- list()
-
   for (i in 1:modelnum) {
     Vector <- numeric(9)
     Vector[1] <- mlist[[i]]$ddf$dsmodel[2]
@@ -134,47 +135,30 @@ truncvalue <- reactive(as.double(input$truncation[1]))
   ddf.1.moos <- ds(DistanceInput2, key="hn", adjustment = "cos", truncation = list(left=0, right=truncvalue()))
   list(ddf.1.moos = ddf.1.moos, model_result_df = model_result_df, Calf_n = Calf_n, Cow_n = Cow_n, datasheet=datasheet, transflown = transflown, strat_num=strat_num, MOOS_n=MOOS_n,Calf_ratio=Calf_ratio, Bull_ratio=Bull_ratio, Bull_n=Bull_n, WTD_n=WTD_n, MUDE_n=MUDE_n,WAPT_n=WAPT_n )
   })
-
   output$myplot <- renderPlot({plot(OL()$ddf.1.moos, main=paste("Global detection function for moose, HN-Cos, truncation=",425))})
+  output$AIRCRAFT_QQ = renderPlot({OL()$p1})
   output$MOOS_QQ = renderPlot({ddf.gof(OL()$ddf.1.moos$ddf)})
   output$MOOS_TAB = DT::renderDataTable(OL()$model_result_df, options = list(lengthChange=FALSE))
-
-
   output$myplot <- renderPlot({
-
     # input$file1 will be NULL initially. After the user selects and uploads a
     # file, it will be a data frame with 'name', 'size', 'type', and 'datapath'
     # columns. The 'datapath' column will contain the local filenames where the
     # data can be found.
-
     inFile <- input$MegaDB$datapath  #User input -- Get the Access database pathname
-
     if (is.null(inFile))
       return(NULL)
-    
-    ########Sticky note
-    #####
-    ###
+
     DB <- paste("Driver={Microsoft Access Driver (*.mdb, *.accdb)};Port=1433; DBQ=",inFile)
-    #DB <- paste("Driver=FreeTDS;Port=<port>; DBQ=",inFile)
     myconn <- odbcDriverConnect(DB)
     strat <- sqlFetch(myconn, "strata")
     strat_num <- nrow(strat)
     results_num_index <- as.integer(strat_num) + 1
 
     datasheet <- as.data.frame(sqlQuery(myconn, "select * from datasheet"))
-
     names(datasheet) <- sub(" ", ".", names(datasheet))
     names(datasheet) <- sub(" ", ".", names(datasheet))
     names(datasheet) <- sub("/", "", names(datasheet))
     names(datasheet) <- sub("/", "", names(datasheet))
-
-#################
-    #
-    #
-    #
-#################
-
     transflown <- datasheet[!duplicated(datasheet[, c("Transect.ID", "Stratum")]), ]
     transflown <- transflown[!is.na(transflown$Stratum),]
     transflown$DistancePerp <- " "
@@ -182,41 +166,25 @@ truncvalue <- reactive(as.double(input$truncation[1]))
     transflown$Covariate.1 <- " "
     transflown$Covariate.2 <- " "
     transflown <- unique(transflown)
-
-
     datasheet.2 <- datasheet[ which(datasheet$MOOS.GroupSize >0),]
     datasheet.2 <- unique(datasheet.2)
-
-
     DistancePreInput.MOOS.2 <- anti_join(transflown, datasheet.2, by=c("Transect.ID","Stratum"))
     DistancePreInput.MOOS.2 <- unique(DistancePreInput.MOOS.2)
-
-
     DistancePreInput.MOOS <- merge(datasheet.2, DistancePreInput.MOOS.2, all=T)
     DistancePreInput.MOOS <- unique(DistancePreInput.MOOS)
-
-
     DistanceInput<- as.data.frame(cbind(object.ID = as.numeric(DistancePreInput.MOOS$ID), Region.Label= DistancePreInput.MOOS$Stratum,Area = as.numeric(DistancePreInput.MOOS$Stratum.Area), TID = as.numeric(DistancePreInput.MOOS$Transect.ID), TLENGTH = as.numeric(DistancePreInput.MOOS$Transect.Length), Effort=as.numeric(DistancePreInput.MOOS$Length)/1000, distance= as.numeric(DistancePreInput.MOOS$DistancePerp), size=as.numeric(DistancePreInput.MOOS$MOOS.GroupSize),CC=as.factor(DistancePreInput.MOOS$Covariate.1), Activity=as.factor(DistancePreInput.MOOS$Covariate.2)))
-
     DistanceInput <- DistanceInput[ order(DistanceInput$Region.Label, DistanceInput$TID, DistanceInput$size), ]
-
-
     close(myconn)
 
     DistanceInput2 <- as.data.frame(cbind(object = as.numeric(DistancePreInput.MOOS$ID), Region.Label= DistancePreInput.MOOS$Stratum,Area = as.numeric(DistancePreInput.MOOS$Stratum.Area), Sample.Label = as.numeric(DistancePreInput.MOOS$Transect.ID), Effort = as.numeric(DistancePreInput.MOOS$Transect.Length), distance= as.numeric(DistancePreInput.MOOS$DistancePerp), size=as.numeric(DistancePreInput.MOOS$MOOS.GroupSize),CC=as.factor(DistancePreInput.MOOS$Covariate.1), Activity=as.factor(DistancePreInput.MOOS$Covariate.2)))
-
     DistanceInput2 <- unique(DistanceInput2)
-
-
     ddf.1.moos <- ds(DistanceInput2, key="hn", adjustment = "cos", truncation = list(left=0, right=truncvalue()))
     plot(ddf.1.moos, main=paste("Global detection function for moose, HN-Cos, truncation=",truncvalue()))
-    # MOOS QQ-plot ----
 
+    # MOOS QQ-plot ----
     output$MOOS_QQ <- renderPlot({
       ddf.gof(ddf.1.moos$ddf)
     })
-   })
-
 
     ###########################################################
     ###########################################################
@@ -226,7 +194,6 @@ truncvalue <- reactive(as.double(input$truncation[1]))
 
 
   output$myplot2 <- renderPlot({
-    
     inFile <- DB() #input$MegaDB$datapath  #User input -- Get the Access database pathname
      # print(inFile)
     if (is.null(inFile))
@@ -236,16 +203,11 @@ truncvalue <- reactive(as.double(input$truncation[1]))
     strat <- sqlFetch(myconn, "strata")
     strat_num <- nrow(strat)
     results_num_index <- as.integer(strat_num) + 1
-
     datasheet <- as.data.frame(sqlQuery(myconn, "select * from datasheet"))
-
     names(datasheet) <- sub(" ", ".", names(datasheet))
     names(datasheet) <- sub(" ", ".", names(datasheet))
     names(datasheet) <- sub("/", "", names(datasheet))
     names(datasheet) <- sub("/", "", names(datasheet))
-
-
-
     transflown <- datasheet[!duplicated(datasheet[, c("Transect.ID", "Stratum")]), ]
     transflown <- transflown[!is.na(transflown$Stratum),]
     transflown$DistancePerp <- " "
@@ -253,22 +215,13 @@ truncvalue <- reactive(as.double(input$truncation[1]))
     transflown$Covariate.1 <- " "
     transflown$Covariate.2 <- " "
     transflown <- unique(transflown)
-
-
     datasheet.2 <- datasheet[ which(datasheet$MOOS.GroupSize >0),]
     datasheet.2 <- unique(datasheet.2)
-
-
     DistancePreInput.MOOS.2 <- anti_join(transflown, datasheet.2, by=c("Transect.ID","Stratum"))
     DistancePreInput.MOOS.2 <- unique(DistancePreInput.MOOS.2)
-
-
     DistancePreInput.MOOS <- merge(datasheet.2, DistancePreInput.MOOS.2, all=T)
     DistancePreInput.MOOS <- unique(DistancePreInput.MOOS)
-
-
     DistanceInput<- as.data.frame(cbind(object.ID = as.numeric(DistancePreInput.MOOS$ID), Region.Label= DistancePreInput.MOOS$Stratum,Area = as.numeric(DistancePreInput.MOOS$Stratum.Area), TID = as.numeric(DistancePreInput.MOOS$Transect.ID), TLENGTH = as.numeric(DistancePreInput.MOOS$Transect.Length), Effort=as.numeric(DistancePreInput.MOOS$Length)/1000, distance= as.numeric(DistancePreInput.MOOS$DistancePerp), size=as.numeric(DistancePreInput.MOOS$MOOS.GroupSize),CC=as.factor(DistancePreInput.MOOS$Covariate.1), Activity=as.factor(DistancePreInput.MOOS$Covariate.2)))
-
     DistanceInput <- DistanceInput[ order(DistanceInput$Region.Label, DistanceInput$TID, DistanceInput$size), ]
 #################################Create lines geometry for the transects
     trans.flown <- sqlFetch(myconn, "transects_flown")
@@ -279,7 +232,6 @@ truncvalue <- reactive(as.double(input$truncation[1]))
   #  to.coords <- as.data.frame(cbind(TID =trans.flown$UniqueID,X =trans.flown$TO_X, "y"=trans.flown$TO_Y))
     f <- as.data.frame(cbind(X =trans.flown$FROM_X, "y"=trans.flown$FROM_Y))
     t <- as.data.frame(cbind(X =trans.flown$TO_X, "y"=trans.flown$TO_Y))   
-
     
   l <- vector("list", nrow(from.coords))
   for (i in seq_along(l)){
@@ -287,11 +239,8 @@ truncvalue <- reactive(as.double(input$truncation[1]))
     }
    trans.flown.splat <- SpatialLines(l)
    trans.flown.splat.df <- SpatialLinesDataFrame(sl = trans.flown.splat,data = from.coords)
-    
-    
 
-    
-GetShapefile <- function(InShapefile, OutShapefile){
+   GetShapefile <- function(InShapefile, OutShapefile){
     if (is.null(InShapefile)) 
         return(NULL)  
     dir<-dirname(InShapefile[1,4])
@@ -300,41 +249,23 @@ GetShapefile <- function(InShapefile, OutShapefile){
     file.rename(InShapefile[i,4], paste0(dir,"/",InShapefile[i,1]))}
     OutShapefile <- grep(list.files(dir, pattern="*.shp", full.names=TRUE), pattern="*.xml", inv=T, value=T)
      }
-      
-      
      
-      
     survey.area359.TTM <- readOGR(GetShapefile(input$WMU_Shp), substr(basename(GetShapefile(input$WMU_Shp)),1,nchar(basename(GetShapefile(input$WMU_Shp)))-4))
-    #survey.area359.TTM <- readOGR(GetShapefile(input$WMU_Shp), substr(basename(GetShapefile(input$WMU_Shp)),1,nchar(basename(GetShapefile(input$WMU_Shp)))-4))
-    #survey.areanon355 <- readOGR(dsn=StrataPolyLayerFile, layer=substr(basename(StrataPolyLayerFile),1,nchar(basename(StrataPolyLayerFile))-4))
-    # transects <- reactive(input$TransFlown_Shp)
-    #survey.transects359.TTM <- readOGR(GetShapefile2(input$TransFlown_Shp), substr(basename(GetShapefile2(input$TransFlown_Shp)),1,nchar(basename(GetShapefile2(input$TransFlown_Shp))-4)))
-
-
     obs.table.MOOS <- data.frame(cbind(object = DistanceInput$object.ID, Region.Label = DistanceInput$Region.Label, Sample.Label = DistanceInput$TID, distance = DistanceInput$distance, size = DistanceInput$size))
-
     m1 <- merge(obs.table.MOOS, DistancePreInput.MOOS, by.x = "object", by.y = "ID")
-
     grid_plot_obj <- function(fill, name, sp){
-
-
-      names(fill) <- NULL
-      row.names(fill) <- NULL
-      data <- data.frame(fill)
-      names(data) <- name
-
-      spdf <- SpatialPolygonsDataFrame(sp, data)
-      spdf@data$id <- rownames(spdf@data)
-      spdf.points <- fortify(spdf, region="id")
-      spdf.df <- join(spdf.points, spdf@data, by="id")
-
-
-      spdf.df$x <- spdf.df$long
-      spdf.df$y <- spdf.df$lat
-
-      geom_polygon(aes_string(x="x",y="y",fill=name, group="group"), data=spdf.df)
+    names(fill) <- NULL
+    row.names(fill) <- NULL
+    data <- data.frame(fill)
+    names(data) <- name
+    spdf <- SpatialPolygonsDataFrame(sp, data)
+    spdf@data$id <- rownames(spdf@data)
+    spdf.points <- fortify(spdf, region="id")
+    spdf.df <- join(spdf.points, spdf@data, by="id")
+    spdf.df$x <- spdf.df$long
+    spdf.df$y <- spdf.df$lat
+    geom_polygon(aes_string(x="x",y="y",fill=name, group="group"), data=spdf.df)
     }
-
 
     p <- ggplot ()
     p <- p + geom_polygon(data = survey.area359.TTM, fill="light blue", aes(x=long, y=lat, group=group)) + coord_equal()
@@ -343,12 +274,7 @@ GetShapefile <- function(InShapefile, OutShapefile){
     p <- p + geom_point(data = m1, aes(x=GrpX, y=GrpY, size = size), colour = "red", alpha=I(0.5) )
     p <- p + labs(fill = "MDSTRATA", x = "Easting (10TM AEP Forest)", y = "Northing (10TM AEP Forest)")
     p <- p + geom_point(aes(x=))
-
-
-      plot(p)
-
-
-
+    plot(p)
  })
     
   output$MOOS_TXT = renderText({paste("The survey included", round(OL()$ddf.1.moos$dht$individuals$summary$Effort[1],1), "km of transects (n= ", nrow(OL()$transflown), " mean transect length = ",                
