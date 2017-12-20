@@ -84,11 +84,11 @@ truncvalue <- reactive(as.double(input$truncation[1]))
     #
     #
     
-    for (i in 1: length(U.list)) {
- # par(mfrow=c(2,length(U.list)))
-        p1[i] <- plot(ds(U.list[[i]], key="hn", adjustment = "cos", truncation = 425), main= paste("Detection function for aircraft:", unique(U.list[[i]]$Aircraft)))
-        p2[i] <- ddf.gof((ddf(method="ds", data=U.list[[i]], dsmodel = ~cds(key="hn"), meta.data=list(width=425))), main=paste("Q-Q plot of cdf for aircraft:", unique(U.list[[i]]$Aircraft)))
-     }
+  for (i in 1: length(U.list)) {
+# par(mfrow=c(2,length(U.list)))
+      p1[i] <- plot(ds(U.list[[i]], key="hn", adjustment = "cos", truncation = 425), main= paste("Detection function for aircraft:", unique(U.list[[i]]$Aircraft)))
+      p2[i] <- ddf.gof((ddf(method="ds", data=U.list[[i]], dsmodel = ~cds(key="hn"), meta.data=list(width=425))), main=paste("Q-Q plot of cdf for aircraft:", unique(U.list[[i]]$Aircraft)))
+   }
   
     
     
