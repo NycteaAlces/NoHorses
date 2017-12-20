@@ -89,7 +89,7 @@ truncvalue <- reactive(as.double(input$truncation[1]))
         p1[i] <- plot(ds(U.list[[i]], key="hn", adjustment = "cos", truncation = 425), main= paste("Detection function for aircraft:", unique(U.list[[i]]$Aircraft)))
         p2[i] <- ddf.gof((ddf(method="ds", data=U.list[[i]], dsmodel = ~cds(key="hn"), meta.data=list(width=425))), main=paste("Q-Q plot of cdf for aircraft:", unique(U.list[[i]]$Aircraft)))
      }
-    
+  
     
     
   DistanceInput2 <- as.data.frame(cbind(object = as.numeric(DistancePreInput.MOOS$ID), Region.Label= DistancePreInput.MOOS$Stratum,Area = as.numeric(DistancePreInput.MOOS$Stratum.Area), Sample.Label = as.numeric(DistancePreInput.MOOS$Transect.ID), Effort = as.numeric(DistancePreInput.MOOS$Transect.Length), distance= as.numeric(DistancePreInput.MOOS$DistancePerp), size=as.numeric(DistancePreInput.MOOS$MOOS.GroupSize),CC=as.factor(DistancePreInput.MOOS$Covariate.1), Activity=as.factor(DistancePreInput.MOOS$Covariate.2)))
