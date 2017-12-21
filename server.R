@@ -33,53 +33,6 @@ shinyServer(function(input, output,session) {
     sessionInfo()
   })
 
-  # Insert the right number of plot output objects into the web page
-
-  #
-  #
-  #
-  #   MIKE RUSSELL  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  #
-  #
-  output$plots <- renderUI({
-    max_plots <- length(OL()$U.list)
-    plot_output_list <- lapply(1:(max_plots*2), function(i) {
-      plotname <- paste("plotdf", i, sep="")
-      plotname2 <- paste("plotqq", i, sep="")
-      plotOutput(plotname, height = 280, width = 250)
-      plotOutput(plotname2, height=280, width=250)
-    })
-
-    # Convert the list to a tagList - this is necessary for the list of items
-    # to display properly.
-    do.call(tagList, plot_output_list)
-  })
-
-
-  # Call renderPlot for each one. Plots are only actually generated when they
-  # are visible on the web page.
-  for (i in 1:OL()$max_plots) {
-    # Need local so that each item gets its own number. Without it, the value
-    # of i in the renderPlot() will be the same across all instances, because
-    # of when the expression is evaluated.
-    local({
-      my_i <- i
-      plotname <- paste("plot", my_i, sep="")
-
-      output[[paste(plotname,"1")]] <- renderPlot({
-        plot(ds(U.list[[i]], key="hn", adjustment = "cos", truncation = 425), main= paste("Detection function for aircraft:", unique(U.list[[i]]$Aircraft)))
-      })
-      output[[paste(plotname,"2")]] <- renderPlot({
-        ddf.gof((ddf(method="ds", data=U.list[[i]], dsmodel = ~cds(key="hn"), meta.data=list(width=425))), main=paste("Q-Q plot of cdf for aircraft:", unique(U.list[[i]]$Aircraft)))
-
-      })
-    })
-  }
-
-
-
-
-
 
 
   OL <- eventReactive(input$MegaDB$datapath, { ####----
@@ -172,8 +125,51 @@ shinyServer(function(input, output,session) {
     ddf.1.moos <- ds(DistanceInput2, key="hn", adjustment = "cos", truncation = list(left=0, right=truncvalue()))
     list(ddf.1.moos = ddf.1.moos, model_result_df = model_result_df, Calf_n = Calf_n, Cow_n = Cow_n, datasheet=datasheet, transflown = transflown, strat_num=strat_num, MOOS_n=MOOS_n,Calf_ratio=Calf_ratio, Bull_ratio=Bull_ratio, Bull_n=Bull_n, WTD_n=WTD_n, MUDE_n=MUDE_n,WAPT_n=WAPT_n )
   })
-  
-  
+
+  # Insert the right number of plot output objects into the web page
+
+  #
+  #
+  #
+  #   MIKE RUSSELL  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  #
+  #
+  output$plots <- renderUI({
+    max_plots <- length(OL()$U.list)
+    plot_output_list <- lapply(1:(max_plots*2), function(i) {
+      plotname <- paste("plotdf", i, sep="")
+      plotname2 <- paste("plotqq", i, sep="")
+      plotOutput(plotname, height = 280, width = 250)
+      plotOutput(plotname2, height=280, width=250)
+    })
+
+    # Convert the list to a tagList - this is necessary for the list of items
+    # to display properly.
+    do.call(tagList, plot_output_list)
+  })
+
+
+  # Call renderPlot for each one. Plots are only actually generated when they
+  # are visible on the web page.
+  for (i in 1:OL()$max_plots) {
+    # Need local so that each item gets its own number. Without it, the value
+    # of i in the renderPlot() will be the same across all instances, because
+    # of when the expression is evaluated.
+    local({
+      my_i <- i
+      plotname <- paste("plot", my_i, sep="")
+
+      output[[paste(plotname,"1")]] <- renderPlot({
+        plot(ds(U.list[[i]], key="hn", adjustment = "cos", truncation = 425), main= paste("Detection function for aircraft:", unique(U.list[[i]]$Aircraft)))
+      })
+      output[[paste(plotname,"2")]] <- renderPlot({
+        ddf.gof((ddf(method="ds", data=U.list[[i]], dsmodel = ~cds(key="hn"), meta.data=list(width=425))), main=paste("Q-Q plot of cdf for aircraft:", unique(U.list[[i]]$Aircraft)))
+
+      })
+    })
+  }
+
+
   output$myplot <- renderPlot({plot(OL()$ddf.1.moos, main=paste("Global detection function for moose, HN-Cos, truncation=",425))})
   output$MOOS_QQ = renderPlot({ddf.gof(OL()$ddf.1.moos$ddf)})
   output$MOOS_TAB = DT::renderDataTable(OL()$model_result_df, options = list(lengthChange=FALSE))
