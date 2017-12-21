@@ -85,7 +85,6 @@ truncvalue <- reactive(as.double(input$truncation[1]))
     #
     
   for (i in 1: length(U.list)) {
-# par(mfrow=c(2,length(U.list)))
       p1[i] <- plot(ds(U.list[[i]], key="hn", adjustment = "cos", truncation = 425), main= paste("Detection function for aircraft:", unique(U.list[[i]]$Aircraft)))
       p2[i] <- ddf.gof((ddf(method="ds", data=U.list[[i]], dsmodel = ~cds(key="hn"), meta.data=list(width=425))), main=paste("Q-Q plot of cdf for aircraft:", unique(U.list[[i]]$Aircraft)))
    }
@@ -136,9 +135,18 @@ truncvalue <- reactive(as.double(input$truncation[1]))
   list(ddf.1.moos = ddf.1.moos, model_result_df = model_result_df, Calf_n = Calf_n, Cow_n = Cow_n, datasheet=datasheet, transflown = transflown, strat_num=strat_num, MOOS_n=MOOS_n,Calf_ratio=Calf_ratio, Bull_ratio=Bull_ratio, Bull_n=Bull_n, WTD_n=WTD_n, MUDE_n=MUDE_n,WAPT_n=WAPT_n )
   })
   output$myplot <- renderPlot({plot(OL()$ddf.1.moos, main=paste("Global detection function for moose, HN-Cos, truncation=",425))})
-  output$AIRCRAFT_QQ = renderPlot({OL()$p1})
   output$MOOS_QQ = renderPlot({ddf.gof(OL()$ddf.1.moos$ddf)})
   output$MOOS_TAB = DT::renderDataTable(OL()$model_result_df, options = list(lengthChange=FALSE))
+  output$AIRCRAFT_DF <- renderPlot{
+  U.list <- split(CleanHistData, CleanHistData$Aircraft)
+  for (i in 1: length(OL()$U.list)) {
+    par(mfrow=c(2,length(OL$()U.list)))
+    plot(ds(OL()$U.list[[i]], key="hn", adjustment = "cos", truncation = 425), main= paste("Detection function for aircraft:", unique(OL()$U.list[[i]]$Aircraft)))
+    ddf.gof((ddf(method="ds", data=U.list[[i]], dsmodel = ~cds(key="hn"), meta.data=list(width=425))), main=paste("Q-Q plot of cdf for aircraft:", unique(OL()$U.list[[i]]$Aircraft)))
+  }
+  par(mfrow=c(1,1))
+  }
+
   output$myplot <- renderPlot({
     # input$file1 will be NULL initially. After the user selects and uploads a
     # file, it will be a data frame with 'name', 'size', 'type', and 'datapath'
