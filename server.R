@@ -32,6 +32,58 @@ truncvalue <- reactive(as.double(input$truncation[1]))
   output$debug <- renderPrint({
     sessionInfo()
   })
+  
+    # Insert the right number of plot output objects into the web page
+  
+  #
+#
+#
+#   MIKE RUSSELL  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#
+#
+
+  
+  
+  
+  
+  output$plots <- renderUI({
+    max_plots <- length(OL()$U.list)
+    plot_output_list <- lapply(1:(max_plots*2), function(i) {
+      plotname <- paste("plotdf", i, sep="")
+      plotname2 <- paste("plotqq", i, sep="")
+      plotOutput(plotname, height = 280, width = 250)
+      plotOutput(plotname2, height=280, width=250)
+    })
+    
+    # Convert the list to a tagList - this is necessary for the list of items
+    # to display properly.
+    do.call(tagList, plot_output_list)
+  })
+  
+  # Call renderPlot for each one. Plots are only actually generated when they
+  # are visible on the web page.
+  for (i in 1:max_plots) {
+    # Need local so that each item gets its own number. Without it, the value
+    # of i in the renderPlot() will be the same across all instances, because
+    # of when the expression is evaluated.
+    local({
+      my_i <- i
+      plotname <- paste("plot", my_i, sep="")
+      
+      output[[paste(plotname,"1")]] <- renderPlot({
+        plot(ds(U.list[[i]], key="hn", adjustment = "cos", truncation = 425), main= paste("Detection function for aircraft:", unique(U.list[[i]]$Aircraft)))  
+                })
+      output[[paste(plotname,"2")]] <- renderPlot({
+        ddf.gof((ddf(method="ds", data=U.list[[i]], dsmodel = ~cds(key="hn"), meta.data=list(width=425))), main=paste("Q-Q plot of cdf for aircraft:", unique(U.list[[i]]$Aircraft)))
+        
+      )
+      })
+    })
+  }
+    
+    
+  
+  
   OL <- eventReactive(input$MegaDB$datapath, { ####----
   # input$file1 will be NULL initially. After the user selects and uploads a
   # file, it will be a data frame with 'name', 'size', 'type', and 'datapath'
@@ -281,55 +333,7 @@ truncvalue <- reactive(as.double(input$truncation[1]))
                                       round((sum(OL()$datasheet$MOOS.Bull.L)/(OL()$Bull_n - sum(OL()$datasheet$MOOS.Bull.N)))*100,1), "% were large. In addition to moose, ",
                                       OL()$WTD_n, " White-tailed deer, ", OL()$MUDE_n, " Mule Deer, and ", OL()$WAPT_n," elk were observed during the survey. The observed sample sizes for these species were not deemed sufficient to provide a reliable estimate of abundance.")})
 
-    # Insert the right number of plot output objects into the web page
   
-  #
-#
-#
-#   MIKE RUSSELL  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#
-#
-
-  
-  
-  
-  
-  output$plots <- renderUI({
-    max_plots <- length(OL()$U.list)
-    plot_output_list <- lapply(1:(max_plots*2), function(i) {
-      plotname <- paste("plotdf", i, sep="")
-      plotname2 <- paste("plotqq", i, sep="")
-      plotOutput(plotname, height = 280, width = 250)
-      plotOutput(plotname2, height=280, width=250)
-    })
-    
-    # Convert the list to a tagList - this is necessary for the list of items
-    # to display properly.
-    do.call(tagList, plot_output_list)
-  })
-  
-  # Call renderPlot for each one. Plots are only actually generated when they
-  # are visible on the web page.
-  for (i in 1:max_plots) {
-    # Need local so that each item gets its own number. Without it, the value
-    # of i in the renderPlot() will be the same across all instances, because
-    # of when the expression is evaluated.
-    local({
-      my_i <- i
-      plotname <- paste("plot", my_i, sep="")
-      
-      output[[paste(plotname,"1")]] <- renderPlot({
-        plot(ds(U.list[[i]], key="hn", adjustment = "cos", truncation = 425), main= paste("Detection function for aircraft:", unique(U.list[[i]]$Aircraft)))  
-                })
-      output[[paste(plotname,"2")]] <- renderPlot({
-        ddf.gof((ddf(method="ds", data=U.list[[i]], dsmodel = ~cds(key="hn"), meta.data=list(width=425))), main=paste("Q-Q plot of cdf for aircraft:", unique(U.list[[i]]$Aircraft)))
-        
-      )
-      })
-    })
-  }
-    
-    
     ###########################################################
     ###########################################################
     ### Plot mule deer detection function
