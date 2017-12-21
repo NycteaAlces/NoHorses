@@ -41,9 +41,21 @@ truncvalue <- reactive(as.double(input$truncation[1]))
 #   MIKE RUSSELL  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #
 #
-
+  output$plots <- renderUI({
+    max_plots <- length(OL()$U.list)
+    plot_output_list <- lapply(1:(max_plots*2), function(i) {
+      plotname <- paste("plotdf", i, sep="")
+      plotname2 <- paste("plotqq", i, sep="")
+      plotOutput(plotname, height = 280, width = 250)
+      plotOutput(plotname2, height=280, width=250)
+    })
+    
+    # Convert the list to a tagList - this is necessary for the list of items
+    # to display properly.
+    do.call(tagList, plot_output_list)
+  })
   
-  
+ 
   
   
  
@@ -190,21 +202,7 @@ truncvalue <- reactive(as.double(input$truncation[1]))
     })
 
     
-     output$plots <- renderUI({
-    max_plots <- length(OL()$U.list)
-    plot_output_list <- lapply(1:(max_plots*2), function(i) {
-      plotname <- paste("plotdf", i, sep="")
-      plotname2 <- paste("plotqq", i, sep="")
-      plotOutput(plotname, height = 280, width = 250)
-      plotOutput(plotname2, height=280, width=250)
-    })
-    
-    # Convert the list to a tagList - this is necessary for the list of items
-    # to display properly.
-    do.call(tagList, plot_output_list)
-  })
-  
-  # Call renderPlot for each one. Plots are only actually generated when they
+    # Call renderPlot for each one. Plots are only actually generated when they
   # are visible on the web page.
   for (i in 1:max_plots) {
     # Need local so that each item gets its own number. Without it, the value
