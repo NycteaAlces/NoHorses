@@ -56,7 +56,28 @@ truncvalue <- reactive(as.double(input$truncation[1]))
   })
   
  
-  
+      # Call renderPlot for each one. Plots are only actually generated when they
+  # are visible on the web page.
+  for (i in 1:OL()$max_plots) {
+  # Need local so that each item gets its own number. Without it, the value
+  # of i in the renderPlot() will be the same across all instances, because
+  # of when the expression is evaluated.
+  local({
+    my_i <- i
+    plotname <- paste("plot", my_i, sep="")
+    
+    output[[paste(plotname,"1")]] <- renderPlot({
+      plot(ds(U.list[[i]], key="hn", adjustment = "cos", truncation = 425), main= paste("Detection function for aircraft:", unique(U.list[[i]]$Aircraft)))  
+    })
+    output[[paste(plotname,"2")]] <- renderPlot({
+      ddf.gof((ddf(method="ds", data=U.list[[i]], dsmodel = ~cds(key="hn"), meta.data=list(width=425))), main=paste("Q-Q plot of cdf for aircraft:", unique(U.list[[i]]$Aircraft)))
+      
+    })
+    })
+    }
+
+
+    
   
  
   
@@ -202,28 +223,7 @@ truncvalue <- reactive(as.double(input$truncation[1]))
     })
 
     
-    # Call renderPlot for each one. Plots are only actually generated when they
-  # are visible on the web page.
-  for (i in 1:OL()$max_plots) {
-  # Need local so that each item gets its own number. Without it, the value
-  # of i in the renderPlot() will be the same across all instances, because
-  # of when the expression is evaluated.
-  local({
-    my_i <- i
-    plotname <- paste("plot", my_i, sep="")
-    
-    output[[paste(plotname,"1")]] <- renderPlot({
-      plot(ds(U.list[[i]], key="hn", adjustment = "cos", truncation = 425), main= paste("Detection function for aircraft:", unique(U.list[[i]]$Aircraft)))  
-    })
-    output[[paste(plotname,"2")]] <- renderPlot({
-      ddf.gof((ddf(method="ds", data=U.list[[i]], dsmodel = ~cds(key="hn"), meta.data=list(width=425))), main=paste("Q-Q plot of cdf for aircraft:", unique(U.list[[i]]$Aircraft)))
-      
-    })
-    })
-    }
 
-
-    
     
     
     
