@@ -46,42 +46,7 @@ truncvalue <- reactive(as.double(input$truncation[1]))
   
   
   
-  output$plots <- renderUI({
-    max_plots <- length(OL()$U.list)
-    plot_output_list <- lapply(1:(max_plots*2), function(i) {
-      plotname <- paste("plotdf", i, sep="")
-      plotname2 <- paste("plotqq", i, sep="")
-      plotOutput(plotname, height = 280, width = 250)
-      plotOutput(plotname2, height=280, width=250)
-    })
-    
-    # Convert the list to a tagList - this is necessary for the list of items
-    # to display properly.
-    do.call(tagList, plot_output_list)
-  })
-  
-  # Call renderPlot for each one. Plots are only actually generated when they
-  # are visible on the web page.
-  for (i in 1:max_plots) {
-    # Need local so that each item gets its own number. Without it, the value
-    # of i in the renderPlot() will be the same across all instances, because
-    # of when the expression is evaluated.
-    local({
-      my_i <- i
-      plotname <- paste("plot", my_i, sep="")
-      
-      output[[paste(plotname,"1")]] <- renderPlot({
-        plot(ds(U.list[[i]], key="hn", adjustment = "cos", truncation = 425), main= paste("Detection function for aircraft:", unique(U.list[[i]]$Aircraft)))  
-                })
-      output[[paste(plotname,"2")]] <- renderPlot({
-        ddf.gof((ddf(method="ds", data=U.list[[i]], dsmodel = ~cds(key="hn"), meta.data=list(width=425))), main=paste("Q-Q plot of cdf for aircraft:", unique(U.list[[i]]$Aircraft)))
-        
-      )
-      })
-    })
-  }
-    
-    
+ 
   
   
   OL <- eventReactive(input$MegaDB$datapath, { ####----
@@ -177,7 +142,6 @@ truncvalue <- reactive(as.double(input$truncation[1]))
   output$myplot <- renderPlot({plot(OL()$ddf.1.moos, main=paste("Global detection function for moose, HN-Cos, truncation=",425))})
   output$MOOS_QQ = renderPlot({ddf.gof(OL()$ddf.1.moos$ddf)})
   output$MOOS_TAB = DT::renderDataTable(OL()$model_result_df, options = list(lengthChange=FALSE))
- 
   output$myplot <- renderPlot({
     # input$file1 will be NULL initially. After the user selects and uploads a
     # file, it will be a data frame with 'name', 'size', 'type', and 'datapath'
@@ -225,6 +189,43 @@ truncvalue <- reactive(as.double(input$truncation[1]))
       ddf.gof(ddf.1.moos$ddf)
     })
 
+    
+     output$plots <- renderUI({
+    max_plots <- length(OL()$U.list)
+    plot_output_list <- lapply(1:(max_plots*2), function(i) {
+      plotname <- paste("plotdf", i, sep="")
+      plotname2 <- paste("plotqq", i, sep="")
+      plotOutput(plotname, height = 280, width = 250)
+      plotOutput(plotname2, height=280, width=250)
+    })
+    
+    # Convert the list to a tagList - this is necessary for the list of items
+    # to display properly.
+    do.call(tagList, plot_output_list)
+  })
+  
+  # Call renderPlot for each one. Plots are only actually generated when they
+  # are visible on the web page.
+  for (i in 1:max_plots) {
+    # Need local so that each item gets its own number. Without it, the value
+    # of i in the renderPlot() will be the same across all instances, because
+    # of when the expression is evaluated.
+    local({
+      my_i <- i
+      plotname <- paste("plot", my_i, sep="")
+      
+      output[[paste(plotname,"1")]] <- renderPlot({
+        plot(ds(U.list[[i]], key="hn", adjustment = "cos", truncation = 425), main= paste("Detection function for aircraft:", unique(U.list[[i]]$Aircraft)))  
+                })
+      output[[paste(plotname,"2")]] <- renderPlot({
+        ddf.gof((ddf(method="ds", data=U.list[[i]], dsmodel = ~cds(key="hn"), meta.data=list(width=425))), main=paste("Q-Q plot of cdf for aircraft:", unique(U.list[[i]]$Aircraft)))
+        
+      )
+      })
+    })
+  }
+    
+    
     ###########################################################
     ###########################################################
     ### Plot a map of the moose observations
