@@ -55,9 +55,9 @@ shinyServer(function(input, output,session) {#----
     transflown <- unique(transflown)
 
     datasheet.md <- datasheet
-    datasheet.md$MUDE.GroupSize <- sum(datasheet$MUDE.Doe,  datasheet$MUDE.Fawn, datasheet$MUDE.Buck.NA, datasheet$MUDE.Buck.S, datasheet$MUDE.Buck.M, datasheet$MUDE.Buck.L, datasheet$MUDE.UC, datasheet$MUDE.UC.Adult)
-    datasheet.md$WTDE.GroupSize <- sum(datasheet$WTDE.Doe,  datasheet$WTDE.Fawn, datasheet$WTDE.Buck.NA, datasheet$WTDE.Buck.S, datasheet$WTDE.Buck.M, datasheet$WTDE.Buck.L, datasheet$WTDE.UC, datasheet$WTDE.UC.Adult)
-    datasheet.md$WAPT.GroupSize <- sum(datasheet$WAPT.Cow,  datasheet$WTDE.Fawn, datasheet$WTDE.Buck.NA, datasheet$WTDE.Buck.S, datasheet$WTDE.Buck.M, datasheet$WTDE.Buck.L, datasheet$WTDE.UC, datasheet$WTDE.UC.Adult)
+  #eet$MUDE.Buck.NA, datasheet$MUDE.Buck.S, datasheet$MUDE.Buck.M, datasheet$MUDE.Buck.L, datasheet$MUDE.UC, datasheet$MUDE.UC.Adult)#
+  #  datasheet.md$WTDE.GroupSize <- sum(datasheet$WTDE.Doe,  datasheet$WTDE.Fawn, datasheet$WTDE.Buck.NA, datasheet$WTDE.Buck.S, datas#heet$WTDE.Buck.M, datasheet$WTDE.Buck.L, datasheet$WTDE.UC, datasheet$WTDE.UC.Adult)
+  #  datasheet.md$WAPT.GroupSize <- sum(datasheet$WAPT.Cow,  datasheet$WTDE.Fawn, datasheet$WTDE.Buck.NA, datasheet$WTDE.Buck.S, datash#eet$WTDE.Buck.M, datasheet$WTDE.Buck.L, datasheet$WTDE.UC, datasheet$WTDE.UC.Adult)
     
     
     datasheet.2 <- unique(datasheet[ which(datasheet$MOOS.GroupSize >0),])
