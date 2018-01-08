@@ -113,15 +113,23 @@ shinyServer(function(input, output,session) {#----
     WAPT_n <-  sum(datasheet$WAPT.Cow, datasheet$WAPT.Calf, datasheet$WAPT.Bull.NA, datasheet$WAPT.Bull.S, datasheet$WAPT.Bull.M, datasheet$WAPT.Bull.L, datasheet$WAPT.UC, datasheet$WAPT.UC.Adult)
     WAPT_n <-  sum(is.numeric(datasheet$WAPT.Cow), is.numeric( datasheet$WAPT.Calf), is.numeric( datasheet$WAPT.Bull.NA), is.numeric( datasheet$WAPT.Bull.S), is.numeric( datasheet$WAPT.Bull.M), is.numeric( datasheet$WAPT.Bull.L), is.numeric( datasheet$WAPT.UC), is.numeric( datasheet$WAPT.UC.Adult))
     #k <- 425
-    #    moos.hn_cos_2 <- ds(DistanceInput2, truncation = truncvalue(), key="hn", adjustment = "cos", order = 2)
-    #    moos.hn_cos_3 <- ds(DistanceInput2, truncation = truncvalue(), key="hn", adjustment = "cos", order = 3)
+    moos.hn_cos_2 <- NULL
+    moos.hn_cos_3 <- NULL
+    moos.hn_cos  <- NULL
+    moos.hn_herm <- NULL
+    moos.hr_herm <- NULL
+    moos.hr_cos  <- NULL
+    moos.hr_poly  <- NULL
+    moos.unif_cos <- NULL
+    moos.hn_cos_2 <- ds(DistanceInput2, truncation = truncvalue(), key="hn", adjustment = "cos", order = 2)
+    moos.hn_cos_3 <- ds(DistanceInput2, truncation = truncvalue(), key="hn", adjustment = "cos", order = 3)
     moos.hn_cos  <- ds(DistanceInput2, truncation = truncvalue(), key="hn", adjustment = "cos")
-    #    moos.hn_herm <- ds(DistanceInput2, truncation = truncvalue(), key="hn", adjustment = "herm")
-    #    moos.hr_herm <- ds(DistanceInput2, truncation = truncvalue(), key="hr", adjustment = "herm")
+    moos.hn_herm <- ds(DistanceInput2, truncation = truncvalue(), key="hn", adjustment = "herm")
+    moos.hr_herm <- ds(DistanceInput2, truncation = truncvalue(), key="hr", adjustment = "herm")
     moos.hr_cos  <- ds(DistanceInput2, truncation = truncvalue(), key="hr", adjustment = "cos")
     moos.hr_poly  <- ds(DistanceInput2, truncation = truncvalue(), key="hr", adjustment = "poly")
     moos.unif_cos <- ds(DistanceInput2, truncation = truncvalue(), key="unif", adjustment = "cos")
-    mlist <- list(moos.hn_cos, moos.hr_cos, moos.hr_poly, moos.unif_cos)
+    mlist <- list(moos.hn_cos, moos.hr_cos, moos.hr_poly, moos.unif_cos,  moos.hn_cos_2,  moos.hn_cos_3, moos.hn_herm,  moos.hr_herm)
     modelnum <- length(mlist)
     model_results <- list()
     for (i in 1:modelnum) { #return results for each candidate moose model such that they can simply be accessed for reporting in global env
