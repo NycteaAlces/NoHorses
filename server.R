@@ -33,7 +33,7 @@ shinyServer(function(input, output,session) {#----
     return(plot_output_list)
   }
 
-  OL <- eventReactive(list(input$MegaDB$datapath), { ####----
+  OL <- eventReactive(list(input$MegaDB$datapath, input$truncation), { ####----
 
     # input$file1 will be NULL initially. After the user selects and uploads a
     # file, it will be a data frame with 'name', 'size', 'type', and 'datapath'
